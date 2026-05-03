@@ -857,11 +857,15 @@
   }
   .faq-item.open .faq-icon { border-color: rgba(200,169,106,0.78); }
   .faq-item.open .faq-icon::before { content: '−'; color: var(--gold); }
-  .faq-a { overflow: hidden; max-height: 0; transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.4s; }
+  .faq-a {
+    overflow: hidden;
+    height: 0;
+    transition: height 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: height;
+  }
   .faq-a p { padding-bottom: 0; font-size: 0.88rem; line-height: 1.9; }
   .faq-a p + p { margin-top: 12px; }
   .faq-a p:last-child { padding-bottom: 24px; }
-  .faq-item.open .faq-a { max-height: 560px; }
   .faq-outro {
     margin-top: 22px;
     font-size: 0.82rem;
@@ -2250,7 +2254,7 @@
       <div>
         <div class="label reveal">FAQ</div>
         <h2 class="section-title reveal reveal-delay-1">Questions<br><em class="italic gold">fréquentes.</em></h2>
-        <p class="faq-outro reveal reveal-delay-2">Une autre question ? <a class="faq-contact-link" href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20-%20site%20TF%20Group">Écrivez-nous.</a></p>
+        <p class="faq-outro reveal reveal-delay-2">Une autre question ? <a class="faq-contact-link" href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20depuis%20le%20site%20internet">Écrivez-nous.</a></p>
       </div>
       <div class="faq-list reveal reveal-delay-2">
         <div class="faq-item">
@@ -2306,7 +2310,7 @@
       Parlons de votre projet
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
-    <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20-%20site%20TF%20Group" class="btn btn-outline-white">Nous écrire directement</a>
+    <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20depuis%20le%20site%20internet" class="btn btn-outline-white">Nous écrire directement</a>
   </div>
   <p class="final-note reveal reveal-delay-4">Quelques éléments suffisent pour démarrer.</p>
 </section>
@@ -2347,7 +2351,7 @@
         <div class="footer-col-title">Contact</div>
         <div class="footer-contact-item">
           <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20-%20site%20TF%20Group" class="footer-email-link">f.brisson@tf-group.fr</a>
+          <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20depuis%20le%20site%20internet" class="footer-email-link">f.brisson@tf-group.fr</a>
         </div>
         <div class="footer-contact-item">
           <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -2898,23 +2902,42 @@
   });
 
   // FAQ
-  function toggleFaq(button) {
-    const item = button.parentElement;
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(faqItem => {
-      faqItem.classList.remove('open');
-      const faqButton = faqItem.querySelector('.faq-q');
-      const faqPanel = faqItem.querySelector('.faq-a');
-      if (faqButton) faqButton.setAttribute('aria-expanded', 'false');
-      if (faqPanel) faqPanel.setAttribute('aria-hidden', 'true');
-    });
-    if (!isOpen) {
-      item.classList.add('open');
-      button.setAttribute('aria-expanded', 'true');
-      const panel = item.querySelector('.faq-a');
-      if (panel) panel.setAttribute('aria-hidden', 'false');
-    }
+  function setFaqPanelState(item, shouldOpen) {
+    const button = item.querySelector('.faq-q');
+    const panel = item.querySelector('.faq-a');
+    if (!button || !panel) return;
+
+    const startHeight = panel.getBoundingClientRect().height;
+    panel.style.height = `${startHeight}px`;
+    panel.offsetHeight;
+
+    item.classList.toggle('open', shouldOpen);
+    button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    panel.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+    panel.style.height = shouldOpen ? `${panel.scrollHeight}px` : '0px';
   }
+
+  function toggleFaq(button) {
+    const item = button.closest('.faq-item');
+    if (!item) return;
+    setFaqPanelState(item, !item.classList.contains('open'));
+  }
+
+  document.querySelectorAll('.faq-a').forEach(panel => {
+    panel.addEventListener('transitionend', event => {
+      if (event.propertyName !== 'height') return;
+      const item = panel.closest('.faq-item');
+      if (item && item.classList.contains('open')) {
+        panel.style.height = 'auto';
+      }
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('.faq-item.open .faq-a').forEach(panel => {
+      panel.style.height = 'auto';
+    });
+  });
 
   // FORM SUBMIT
   async function submitForm() {
@@ -2987,7 +3010,7 @@
       showFormSuccessState();
     } catch (error) {
       console.error('Erreur lors de l’envoi du formulaire :', error);
-      showFormError('L’envoi a échoué. Vous pouvez réessayer dans un instant ou <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20-%20site%20TF%20Group">nous contacter directement</a>.', true);
+      showFormError('L’envoi a échoué. Vous pouvez réessayer dans un instant ou <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20depuis%20le%20site%20internet">nous contacter directement</a>.', true);
     } finally {
       setSubmitState(false);
     }
