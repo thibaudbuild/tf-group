@@ -543,27 +543,10 @@
 </footer>
 
 <script>
-  const VISIT_WEBHOOK_URL = 'https://n8n.thibaudbrisson.com/webhook/visite-site';
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 40);
   });
-
-  function trackSiteVisit() {
-    fetch(VISIT_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        page: window.location.href,
-        referrer: document.referrer
-      })
-    }).catch(() => {});
-  }
-
-  trackSiteVisit();
 
   function toggleMobileNav() {
     document.getElementById('mobileNav').classList.toggle('open');

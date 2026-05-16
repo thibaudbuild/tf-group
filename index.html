@@ -2371,7 +2371,6 @@
 
 <script>
   const FORM_WEBHOOK_URL = 'https://n8n.thibaudbrisson.com/webhook/formulaire-site';
-  const VISIT_WEBHOOK_URL = 'https://n8n.thibaudbrisson.com/webhook/visite-site';
 
   // NAV SCROLL
   const navbar = document.getElementById('navbar');
@@ -2391,22 +2390,6 @@
   } else {
     window.setTimeout(revealHero, 1400);
   }
-
-  function trackSiteVisit() {
-    fetch(VISIT_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        page: window.location.href,
-        referrer: document.referrer
-      })
-    }).catch(() => {});
-  }
-
-  trackSiteVisit();
 
   // MOBILE NAV
   function toggleMobileNav() {
