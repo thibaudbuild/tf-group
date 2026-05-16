@@ -462,8 +462,8 @@
         <h2 class="legal-card-title">Données susceptibles d’être collectées</h2>
         <ul class="legal-list">
           <li><strong>Depuis le formulaire :</strong> prénom, nom, adresse email, numéro de téléphone, type de projet, budget envisagé et description du projet.</li>
-          <li><strong>Données techniques :</strong> informations nécessaires au bon affichage du site et à son hébergement, notamment les journaux techniques générés par le service d’hébergement.</li>
-          <li><strong>Ressources externes :</strong> selon la version publiée, certains appels techniques peuvent être réalisés auprès de fournisseurs tiers utilisés pour les polices ou certains médias intégrés.</li>
+          <li><strong>Données techniques :</strong> informations nécessaires au bon affichage du site et à son hébergement, notamment les journaux techniques générés par le service d’hébergement, ainsi que les événements techniques de visite transmis au système de traitement des demandes.</li>
+          <li><strong>Ressources externes :</strong> selon la version publiée, certains appels techniques peuvent être réalisés auprès de fournisseurs tiers utilisés pour les polices, certains médias intégrés ou la transmission des formulaires et événements de visite.</li>
         </ul>
       </article>
 
@@ -502,7 +502,7 @@
           <li><strong>Vos droits :</strong> droit d’accès, de rectification, d’effacement, de limitation, d’opposition et, lorsque la réglementation le permet, droit à la portabilité.</li>
           <li><strong>Exercice des droits :</strong> par email à <a href="mailto:f.brisson@tf-group.fr?subject=Prise%20de%20contact%20depuis%20le%20site%20internet">f.brisson@tf-group.fr</a>.</li>
           <li><strong>Réclamation :</strong> si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous pouvez adresser une plainte à la CNIL.</li>
-          <li><strong>Cookies et traceurs :</strong> à la date de cette mise à jour, cette version du site n’embarque pas de bandeau cookies car elle n’intègre pas de traceurs publicitaires ou de mesure d’audience soumis au consentement préalable.</li>
+          <li><strong>Cookies et traceurs :</strong> à la date de cette mise à jour, cette version du site n’embarque pas de bandeau cookies car elle n’intègre pas de cookies publicitaires ou de mesure d’audience soumis au consentement préalable. Un événement technique de visite peut être transmis sans dépôt de cookie afin de suivre le bon fonctionnement du site.</li>
         </ul>
       </article>
     </div>
@@ -563,10 +563,27 @@
 </footer>
 
 <script>
+  const VISIT_WEBHOOK_URL = 'https://n8n.thibaudbrisson.com/webhook/visite-site';
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 40);
   });
+
+  function trackSiteVisit() {
+    fetch(VISIT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        page: window.location.href,
+        referrer: document.referrer
+      })
+    }).catch(() => {});
+  }
+
+  trackSiteVisit();
 
   function toggleMobileNav() {
     document.getElementById('mobileNav').classList.toggle('open');
